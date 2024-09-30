@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bowei Adventure Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #game {
+            display: none;
+        }
+        #game-screen {
+            margin: 20px auto;
+            width: 800px;
+            height: 400px;
+            background-color: lightblue;
+            position: relative;
+        }
+        #player {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .crab {
+            position: absolute;
+            bottom: 0;
+            font-size: 24px;
+        }
+        #timer {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Bowei's Adventure Game</h1>
+<div id="start-screen">
+    <button id="start-game">Start Game</button>
+</div>
+
+<div id="game">
+    <h2 id="game-title"></h2>
+    <div id="game-screen">
+        <img id="player" src="raft.png" alt="Bowei on a raft" style="width: 100px;"/>
+        <div id="challenge"></div>
+    </div>
+    <div id="input-area"></div>
+    <button id="next-level" style="display: none;">Next Level</button>
+    <div id="timer"></div>
+</div>
+
+<script>
+    let currentLevel = 1;
+    let correctAnswers = 0;
+    let currentQuestionIndex = 0;
+    let gameTimer;
+    const gameTitle = document.getElementById("game-title");
+    const gameScreen = document.getElementById("game-screen");
+    const challenge = document.getElementById("challenge");
+    const inputArea = document.getElementById("input-area");
+    const player = document.getElementById("player");
+    const nextLevelBtn = document.getElementById("next-level");
+    const timerDisplay = document.getElementById("timer");
+
+    // 簡單和困難的英文數字單字對應
+    const simpleWords = [
+        { word: 'one', number: 1 }, { word: 'two', number: 2 }, { word: 'three', number: 3 }, 
+        { word: 'four', number: 4 }, { word: 'five', number: 5 }, { word: 'six', number: 6 }, 
+        { word: 'seven', number: 7 }, { word: 'eight', number: 8 }, { word: 'nine', number: 9 }, 
+        { word: 'ten', number: 10 }
+    ];
+    const difficultWords = [
+        { word: 'eleven', number: 11 }, { word: 'twelve', number: 12 }, { word: 'thirteen', number: 13 }, 
+        { word: 'fourteen', number: 14 }, { word: 'fifteen', number: 15 }, { word: 'sixteen', number: 16 }, 
+        { word: 'seventeen', number: 17 }, { word: 'eighteen', number: 18 }, { word: 'nineteen', number: 19 }, 
+        { word: 'twenty', number: 20 }
+    ];
+
+    // 組合題目列表
+    const levelQuestions = {
+        1: [...simpleWords.slice(0, 2), ...difficultWords.slice(0, 3)],  // 前兩題簡單，後三題困難
+        2: [...simpleWords.slice(0, 2), ...difficultWords.slice(0, 3)],
+        3: [...simpleWords.slice(0, 2), ...difficultWords.slice(0, 3)]
+    };
+
+    document.getElementById("start-game").addEventListener("click", startGame);
+    nextLevelBtn.addEventListener("click", goToNextLevel);
+
+    function startGame() {
+        document.getElementById("start-screen").style.display = "none";
+        document.getElementById("game").style.display = "block";
+        startLevel(currentLevel);
+    }
+
+    function startLevel(level) {
+        correctAnswers = 0;
+        currentQuestionIndex = 0;
+        gameTitle.textContent = `Stage ${level}: ${levels[level].title}`;
+        challenge.textContent = levels[level].description;
+        loadQuestion(level);
+    }
+
+    function loadQuestion(level) {
+        const question = levelQuestions[level][currentQuestionIndex];
+        if (level === 1) {
+            challenge.textContent = `Select the correct number for '${question.word}'!`;
+            inputArea.innerHTML = generateNumberChoices(1, 20, question.number);
+        } else {
+            startCrabChallenge(question.word);
+        }
+    }
+
+    function generateNumberChoices(min, max, correctNumber) {
+        let html = '';
+        for (let i = min; i <= max; i++) {
+            html += `<button class="choice-btn" data-value="${i}">${i}</button>`;
+        }
+        document.querySelectorAll(".choice-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                checkAnswer(parseInt(this.dataset.value), correctNumber);
+            });
+        });
+        return html;
+    }
+
+    function checkAnswer(selectedValue, correctValue) {
+        if (selectedValue === correctValue) {
+            correctAnswers++;
+            challenge.textContent = "Correct! Bowei moves forward!";
+        } else {
+            challenge.textContent = "Wrong! Try again.";
+        }
+
+        if (correctAnswers >= 5) {
+            nextLevelBtn.style.display = "block";
+        } else {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < levelQuestions[currentLevel].length) {
+                loadQuestion(currentLevel);
+            }
+        }
+    }
+
+    function startCrabChallenge(word) {
+        // Similar to level 1, but for word spelling (crab catching)
+        // Implement crab challenge here...
+    }
+
+    function goToNextLevel() {
+        nextLevelBtn.style.display = "none";
+        currentLevel++;
+        if (currentLevel > 3) {
+            gameTitle.textContent = "Congratulations! You completed all levels!";
+            challenge.textContent = "Well done, Bowei!";
+            inputArea.innerHTML = "";
+        } else {
+            startLevel(currentLevel);
+        }
+    }
+
+</script>
+
+</body>
+</html>
